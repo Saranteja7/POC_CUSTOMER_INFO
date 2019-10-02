@@ -16,11 +16,12 @@ MAINTAINER "Samudrala,Manasa" "manasa.samudrala@verizon.com"
 RUN mkdir -p /app/application/logs/;
 
 # Add application jar
-ADD POC_CUSTOMER_INFO-1.0.0.jar /app/application/poc_customer_info.jar
+ADD poc_customer_info.jar /app/application/poc_customer_info.jar
 
+RUN chmod 775 /app/application/poc_customer_info.jar
 RUN sh -c 'touch /app/application/poc_customer_info.jar'
 
 EXPOSE 8201
 
 
-ENTRYPOINT ["java","-jar","poc_customer_info.jar"]
+ENTRYPOINT ["java","-jar","/app/application/poc_customer_info.jar"]
