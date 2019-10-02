@@ -1,0 +1,143 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.vzw.dvs</groupId>
+	<artifactId>POC_CUSTOMER_INFO</artifactId>
+	<version>1.0.0</version>
+	<name>POC_CUSTOMER_INFO</name>
+
+	<properties>
+		<java.version>1.8</java.version>
+		<spring-cloud.version>Greenwich.SR3</spring-cloud.version>
+		<image.base.path>dev</image.base.path>
+		<docker.maven.plugin>0.4.13</docker.maven.plugin>
+		<scm.maven.plugin>1.9.5</scm.maven.plugin>
+		<image.name>POC_CUSTOMER_INFO</image.name>
+		<orbpm.docker.registry>vzw/b6vv/orbpm</orbpm.docker.registry>
+		<docker.registry.baseurl>oneartifactory.verizon.com:8091</docker.registry.baseurl>
+		<packaging.type>jar</packaging.type>
+
+	</properties>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.1.8.RELEASE</version>
+		<relativePath />
+	</parent>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+			<version>2.1.3.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-config</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>${spring-cloud.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>${docker.maven.plugin}</version>
+				<executions>
+					<execution>
+						<id>build-image</id>
+						<phase>install</phase>
+						<goals>
+							<goal>build</goal>
+						</goals>
+						<configuration>
+							<dockerDirectory>${project.basedir}/target/classes</dockerDirectory>
+							<imageName>test/${image.name}:${project.version}</imageName>
+							<buildArgs>
+								<jar_name>${project.artifactId}</jar_name>
+								<version>${project.version}</version>
+								<packaging_type>${packaging.type}</packaging_type>
+							</buildArgs>
+						</configuration>
+					</execution>
+					<execution>
+						<id>tag-image</id>
+						<phase>install</phase>
+						<goals>
+							<goal>tag</goal>
+						</goals>
+						<configuration>
+							<image>test/${image.name}:${project.version}</image>
+							<newName>${docker.registry.baseurl}/${orbpm.docker.registry}/${image.base.path}/${image.name}:${project.version}</newName>
+						</configuration>
+					</execution>
+					<execution>
+						<id>push-image</id>
+						<phase>install</phase>
+						<goals>
+							<goal>push</goal>
+						</goals>
+						<configuration>
+							<imageName>${docker.registry.baseurl}/${orbpm.docker.registry}/${image.base.path}/${image.name}:${project.version}</imageName>
+						</configuration>
+					</execution>
+				</executions>
+				<configuration>
+					<serverId>docker-hub</serverId>
+					<registryUrl>https://${docker.registry.baseurl}/v2/</registryUrl>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-resources-3</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.basedir}/target/docker</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.build.directory}</directory>
+									<include>${project.artifactId}.${packaging.type}</include>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+
+	</build>
+</project>
